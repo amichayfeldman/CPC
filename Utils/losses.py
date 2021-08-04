@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from Configuration import *
 
+# TODO: add docstring and explanations.
+
 
 class NceLoss(torch.nn.Module):
     def __init__(self):
@@ -21,8 +23,9 @@ class NceLoss(torch.nn.Module):
             total = torch.mm(z_out[:, k, ...], torch.transpose(pred[k], 0, 1))
             correct = torch.sum(torch.eq(torch.argmax(self.softmax(total), dim=0), torch.arange(0, batch_size)))
             if type(config['Params']['focal_loss_gamma']) == int or type(config['Params']['focal_loss_gamma']) == float:
-                focal_weighting_mat = torch.eye(total.shape[0]) * torch.pow((1 - torch.diag(self.softmax(total))),
-                                                                  torch.Tensor([config['Params']['focal_loss_gamma']]))
+                focal_weighting_mat = \
+                    torch.eye(total.shape[0]) * torch.pow((1 - torch.diag(self.softmax(total))),
+                                                          torch.Tensor([config['Params']['focal_loss_gamma']]))
                 focal_weighting_mat = torch.where(focal_weighting_mat == 0, torch.Tensor([1]), focal_weighting_mat)
                 focal_res_batch = torch.mul(focal_weighting_mat, self.lsoftmax(total))
                 batch_nce += torch.sum(torch.diag(focal_res_batch))

@@ -5,6 +5,16 @@ from Models.help_units import conv_block
 from Models.help_units import InceptionBlock
 
 
+def _weights_init(m):
+    if isinstance(m, torch.nn.Linear):
+        torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+    if isinstance(m, torch.nn.Conv2d):
+        torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+    elif isinstance(m, torch.nn.BatchNorm2d):
+        torch.nn.init.constant_(m.weight, 1)
+        torch.nn.init.constant_(m.bias, 0)
+
+
 class CDCK2(torch.nn.Module):
     def __init__(self, prediction_timestep, hidden_size, z_len, batch_size):
 
@@ -35,15 +45,6 @@ class CDCK2(torch.nn.Module):
         self.gru = torch.nn.GRU(input_size=z_len, hidden_size=hidden_size, num_layers=1, bidirectional=False,
                                 batch_first=True)
         self.Wk = torch.nn.ModuleList([torch.nn.Linear(hidden_size, z_len) for i in range(prediction_timestep)])
-
-        def _weights_init(m):
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-            elif isinstance(m, torch.nn.BatchNorm2d):
-                torch.nn.init.constant_(m.weight, 1)
-                torch.nn.init.constant_(m.bias, 0)
 
         # initialize gru
         for layer_p in self.gru._all_weights:

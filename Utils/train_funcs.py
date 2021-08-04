@@ -41,7 +41,7 @@ def train_model(model, data_loaders_dict, config, loss_criterion_nce, save_model
     :param save_model: Bool. If save models during the training or just return the best.
     :param write_csv: Bool. If save a results CSV at training final.
     """
-    # --- Params: --- #
+    # # # --- Params: --- # # #
     lr = config['Params']['lr']
     wd = config['Params']['wd']
     alpha = config['Params']['alpha']
@@ -52,28 +52,26 @@ def train_model(model, data_loaders_dict, config, loss_criterion_nce, save_model
         os.makedirs(os.path.join(output_folder, 'saved_checkpoints'))
     elif write_csv and not os.path.isdir(output_folder):
         os.makedirs(output_folder)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    writer = SummaryWriter(comment='{}'.format(os.path.basename(config['Paths']['output_folder'])))
-    ##################################
-
-    # assert device.type == 'cuda', "Cuda is not working"
-    model.to(device)
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, weight_decay=wd)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10)
 
     train_dataloader, val_dataloader = data_loaders_dict['train_dl'], data_loaders_dict['val_dl']
     train_acc_list, val_acc_list = [], []
     train_loss_list, val_loss_list, lr_list, wd_list = [], [], [], []
     best_train_loss, best_val_loss = np.inf, np.inf
 
-    # --- Write headers and add postfix if result csv is exists  --- #
     if write_csv:
         counter = 0
         csv_path = os.path.join(output_folder, "results_{}.csv")
         while os.path.isfile(csv_path.format(counter)):
             counter += 1
         csv_path = csv_path.format(counter)
-    ######################################################################
+
+    writer = SummaryWriter(comment='{}'.format(os.path.basename(config['Paths']['output_folder'])))
+    ##################################
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, weight_decay=wd)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10)
 
     for epoch in range(epochs):
         running_loss = 0.0
